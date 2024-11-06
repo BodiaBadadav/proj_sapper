@@ -1,5 +1,4 @@
 import random
-
 class GameBoard:
     def __init__(self, rows, cols, mines):
         self.rows = rows
@@ -7,6 +6,8 @@ class GameBoard:
         self.mines = mines
         self.board = [[0 for _ in range(cols)] for _ in range(rows)]
         self.visible = [[False for _ in range(cols)] for _ in range(rows)]
+        self.remaining_flags = mines
+        self.flags = [[False for _ in range(cols)] for _ in range(rows)]  # добавляем поле для флажков
         self.place_mines()
         self.calculate_numbers()
 
@@ -14,8 +15,11 @@ class GameBoard:
         """Сбрасывает игровое поле для новой игры."""
         self.board = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
         self.visible = [[False for _ in range(self.cols)] for _ in range(self.rows)]
+        self.flags = [[False for _ in range(self.cols)] for _ in range(self.rows)]
+        self.remaining_flags = self.mines  # Сбрасываем количество флажков
         self.place_mines()
         self.calculate_numbers()
+
 
     def place_mines(self):
         """Размещаем мины на поле случайным образом."""
@@ -86,3 +90,12 @@ class GameBoard:
                     # Если рядом нет мин, продолжаем рекурсивное открытие
                     if mines_count == 0:
                         self.reveal_empty_cells(r, c, on_cell_click)
+    def toggle_flag(self, row, col):
+        """Устанавливает или снимает флажок в указанной клетке."""
+        if not self.visible[row][col]:
+            if self.flags[row][col]:
+                self.flags[row][col] = False
+                self.remaining_flags += 1
+            elif self.remaining_flags > 0:
+                self.flags[row][col] = True
+                self.remaining_flags -= 1

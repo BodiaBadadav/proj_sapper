@@ -6,6 +6,8 @@ class MinesweeperGUI:
         self.root = root
         self.game_board = game_board
         self.buttons = [[None for _ in range(self.game_board.cols)] for _ in range(self.game_board.rows)]
+        self.remaining_flags_label = tk.Label(self.root, text=f"Осталось флажков: {self.game_board.remaining_flags}")
+        self.remaining_flags_label.grid(row=self.game_board.rows, column=0, columnspan=self.game_board.cols)
         self.create_widgets()
 
 
@@ -16,11 +18,12 @@ class MinesweeperGUI:
                 button = tk.Button(
                     self.root,
                     width=4,
-                    height=2,
-                    command=lambda r=row, c=col: self.on_cell_click(r, c)
+                    height=2
                 )
                 button.grid(row=row, column=col)
-                self.buttons[row][col] = button  # Сохраняем кнопку в self.buttons
+                button.bind("<Button-1>", lambda e, r=row, c=col: self.on_cell_click(r, c))
+                button.bind("<Button-3>", lambda e, r=row, c=col: self.on_right_click(r, c))
+                self.buttons[row][col] = button
 
     def show_mine(self, row, col):
         """Отображает мину в указанной клетке."""
@@ -34,7 +37,21 @@ class MinesweeperGUI:
                 button = self.buttons[row][col]
                 button.config(text="", bg="SystemButtonFace", state="normal")
         self.game_board.reset_board()
+        self.flags_count_label.config(
+            text=f"Осталось флажков: {self.game_board.flags_count}")  # Обновляем счётчик флажков
         self.create_widgets()  # Пересоздаём интерфейс
+
+    def on_right_click(self, row, col):
+        """Обрабатывает правый клик для установки флажка."""
+        self.game_board.toggle_flag(row, col)
+        button = self.buttons[row][col]
+
+        if self.game_board.flags[row][col]:
+            button.config(text="F", fg="orange")
+        else:
+            button.config(text="")
+
+        self.remaining_flags_label.config(text=f"Осталось флажков: {self.game_board.remaining_flags}")
 
     def on_cell_click(self, row, col):
         """Обрабатывает нажатие на клетку."""
